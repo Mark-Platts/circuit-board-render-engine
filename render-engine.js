@@ -39,8 +39,11 @@ class Circuit {
     extraInfoOnOff() {
         this.extraInfo = this.extraInfo ? false : true;
     }
-    addWire(name, points, on, dependencies = [[],[]]){
-        this.components[name] =  new Wire(name, points, on, dependencies);
+    addWire(name, points, on, onDeps = [], offDeps = []){
+        this.components[name] =  new Wire(name, points, on, onDeps, offDeps);
+    }
+    addCircleBulb(name, point, on, onDeps = [], size = 12) {
+        this.components[name] =  new CircleBulb(name, point, on, onDeps, size);
     }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
@@ -62,8 +65,28 @@ class Circuit {
             this.decorators[i].render(this.ctx, this.extraInfo);
         }
     }
+    updateAllLogic() {
+        let change = true;  //this keeps track of whether a change occurs in the system  //TEST BREAK HERE WHEN WORKING
+        while (change) {
+            for (let i of this.orderOverride) {
+                const startOn = this.components[i].on;
+                this.components[i].updateLogic(this.components, this.clickables);
+                if (startOn == this.components[i].on) {
+                    change = false;
+                }
+            }
+            for (let i in this.components) {
+                const startOn = this.components[i].on;
+                this.components[i].updateLogic(this.components, this.clickables);
+                if (startOn == this.components[i].on) {
+                    change = false;
+                }
+            }
+        }
+    }
     update() {
         this.clearCanvas();
+        this.updateAllLogic();
         this.renderComponents();
     }
 }
@@ -71,14 +94,15 @@ class Circuit {
 
 //creates a wire object. name is a unique string, points is an array of arrays, denoting where each point of the wire is,
 //on is bool for whether wire starts on or off.
-//dependencies is an array of two arrays. The first lists components that must be on for this one to be on, the second list ones that must be off.
+//onDeps/offDeps are arrays. The first lists components that must be on for this one to be on, the second list ones that must be off.
 //wire uses OR logic for on dependencies, AND for off.
 class Wire {
-    constructor(name, points, on, dependencies) {
+    constructor(name, points, on, onDeps, offDeps) {
         this.name = name;
         this.points = points;
         this.on = on;
-        this.dependencies = dependencies;
+        this.onDeps = onDeps;
+        this.offDeps = offDeps;
         this.changable = true; //lets the circuit logic know whether to check for update or not
     }
     render(ctx, extraInfo) {
@@ -95,6 +119,34 @@ class Wire {
     }
     onSwitch() {
         this.on = this.on ? false : true;
+    }
+    updateLogic(components, clickables) {
+        let hold = false;
+        for (let i of this.onDeps) { //for each of the on dependencies
+            if (i in components) { //see if the dependency is in components
+                if (components[i].on) { //if so, check if the component is on
+                    hold = true;  //if it is then the wire should turn on
+                }
+            }
+            else if (i in clickables) { //if dependency is not in components, check clickables
+                if (clickables[i].on) {
+                    hold = true;  
+                }
+            }
+        }
+        for (let i of this.offDeps) { //for each of the off dependencies
+            if (i in components) { //see if the dependency is in components
+                if (components[i].on) { //if so, check if the component is on
+                    hold = true;  //if it is then the wire should not turn on
+                }
+            }
+            else if (i in clickables) { //if dependency is not in components, check clickables
+                if (clickables[i].on) {
+                    hold = true;  
+                }
+            }
+        }
+        this.on = hold;
     }
 }
 
@@ -128,6 +180,59 @@ class Switch {
         ctx.strokeRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
     }
 }
+
+
+//for circular bulb component
+//point is middle of bulb as array coord
+//onDep is array with names of on dependancies, work with OR logic
+//size is radius
+class CircleBulb {
+    constructor(name, point, on, onDeps, size) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDeps = onDeps;
+        this.size = size;
+    }
+    updateLogic(components, clickables) {
+        let hold = false;
+
+        for (let i of this.onDeps) { //for each of the on dependencies
+            if (i in components) { //see if the dependency is in components
+                if (components[i].on) { //if so, check if the component is on
+                    hold = true;  //if it is then the wire should turn on
+                }
+            }
+            else if (i in clickables) { //if dependency is not in components, check clickables
+                if (clickables[i].on) {
+                    hold = true;  
+                }
+            }
+        }
+        this.on = hold;
+    }
+    render(ctx, extraInfo) {
+        ctx.lineWidth = 2;
+        ctx.fillStyle = (this.on ? '#ffffff' : '#000000');
+        ctx.strokeStyle = '#808080';
+        ctx.beginPath();
+        ctx.arc(this.point[0], this.point[1], this.size, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+//DECORATORS
 
 //for decorator showing voltage going in or out
 //point is location of tip that arrow is pointing towards as array
@@ -166,7 +271,7 @@ class VInOut {
 //point is location of middle of resistor
 //direction: vertical, horizontal as string
 class Resistor {
-    constructor(point, height, width, color) {
+    constructor(point, width, height, color) {
         this.point = point;
         this.height = height;
         this.width = width;
@@ -175,6 +280,7 @@ class Resistor {
     render(ctx, extraInfo) {
         const shapeStart = [this.point[0]-this.width/2, this.point[1]-this.height/2];
         ctx.fillStyle = this.color;
-        ctx.fillRect(shapeStart[0], shapeStart[1], this.height, this.width);
+        ctx.fillRect(shapeStart[0], shapeStart[1], this.width, this.height);
     }
 }
+
