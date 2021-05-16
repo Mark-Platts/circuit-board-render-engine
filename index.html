@@ -12,10 +12,14 @@
       <body>
 
         <div id="circuit-container"></div>
+        <div id="second-test"></div>
 
         <script>
             let circ1 = new Circuit("circuit-container", '800px', '600px');
             testCircuitLogic();
+            let circ2 = new Circuit("second-test", '200px', '200px');
+            circ2.addSwitch('testSwitch', [20,20], true);
+            circ2.renderComponents();
         </script>
 
       </body>
