@@ -45,6 +45,9 @@ class Circuit {
     addCircleBulb(name, point, on, onDeps = [], size = 12) {
         this.components[name] =  new CircleBulb(name, point, on, onDeps, size);
     }
+    addTransistor(name, point, on, onDeps = [], direction = 'down', size = 12) {
+        this.components[name] = new Transistor(name, point, on, onDeps, direction, size);
+    }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
     }
@@ -69,16 +72,25 @@ class Circuit {
         let change = true;  //this keeps track of whether a change occurs in the system  //TEST BREAK HERE WHEN WORKING
         while (change) {
             for (let i of this.orderOverride) {
+                console.log(this.components)
                 const startOn = this.components[i].on;
                 this.components[i].updateLogic(this.components, this.clickables);
-                if (startOn == this.components[i].on) {
+                if (startOn != this.components[i].on) {
+                    change = true;
+                    break;
+                }
+                else {
                     change = false;
                 }
             }
             for (let i in this.components) {
                 const startOn = this.components[i].on;
                 this.components[i].updateLogic(this.components, this.clickables);
-                if (startOn == this.components[i].on) {
+                if (startOn != this.components[i].on) {
+                    change = true;
+                    break;
+                }
+                else {
                     change = false;
                 }
             }
@@ -174,7 +186,7 @@ class Switch {
     }
     render(ctx, extraInfo) {
         ctx.lineWidth = 2;
-        ctx.fillStyle = (this.on ? '#262626' : '#787878');
+        ctx.fillStyle = (this.on ? '#262626' : '#666666');
         ctx.strokeStyle = '#808080';
         ctx.fillRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
         ctx.strokeRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
@@ -222,7 +234,91 @@ class CircleBulb {
     }
 }
 
-
+//For transistors
+//point is centre as array coords, should take 2 for onDep, each being the name of the dependency
+//direction is way arrow points 'down' is default.
+class Transistor {
+    constructor(name, point, on, onDeps, direction, size) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDeps = onDeps;
+        this.direction = direction;
+        this.size = size;
+    }
+    updateLogic(components, clickables) {
+        let hold = true;
+        for (let i of this.onDeps) { //for each of the on dependencies
+            if (i in components) { //see if the dependency is in components
+                if (components[i].on == false) { //if so, check if the component is on
+                    hold = false;  //if it is then the wire should turn on
+                }
+            }
+            else if (i in clickables) { //if dependency is not in components, check clickables
+                if (clickables[i].on == false) {
+                    hold = false;  
+                }
+            }
+        }
+        this.on = hold;
+    }
+    updateLogicOLD(components, clickables) {
+        let hold = true;
+        for (let i of this.onDeps) { //for each of the on dependencies
+            if (i in components) { //see if the dependency is in components
+                if (components[i].on == false) { //if so, check if the component is on
+                    hold = false;  //if it is then the wire should turn on
+                }
+            }
+            else if (i in clickables) { //if dependency is not in components, check clickables
+                if (clickables[i].on == false) {
+                    hold = false;  
+                }
+            }
+        }
+        this.on = hold;
+    }
+    render(ctx, extraInfo) {
+        ctx.lineWidth = 2;
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(this.point[0], this.point[1], this.size, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = (this.on ? '#ffff00' : '#ffffff');
+        ctx.beginPath();
+        if (this.direction == 'up') {
+            ctx.moveTo(this.point[0], this.point[1]+this.size*3/4);
+            ctx.lineTo(this.point[0], this.point[1]-this.size*3/4);
+            ctx.lineTo(this.point[0]+this.size/4, this.point[1]-this.size*2/4);
+            ctx.lineTo(this.point[0]-this.size/4, this.point[1]-this.size*2/4);
+            ctx.lineTo(this.point[0], this.point[1]-this.size*3/4);
+        }
+        if (this.direction == 'down') {
+            ctx.moveTo(this.point[0], this.point[1]-this.size*3/4);
+            ctx.lineTo(this.point[0], this.point[1]+this.size*3/4);
+            ctx.lineTo(this.point[0]+this.size/4, this.point[1]+this.size*2/4);
+            ctx.lineTo(this.point[0]-this.size/4, this.point[1]+this.size*2/4);
+            ctx.lineTo(this.point[0], this.point[1]+this.size*3/4);
+        }
+        if (this.direction == 'left') {
+            ctx.moveTo(this.point[0]+this.size*3/4, this.point[1]);
+            ctx.lineTo(this.point[0]-this.size*3/4, this.point[1]);
+            ctx.lineTo(this.point[0]-this.size*2/4, this.point[1]+this.size/4);
+            ctx.lineTo(this.point[0]-this.size*2/4, this.point[1]-this.size/4);
+            ctx.lineTo(this.point[0]-this.size*3/4, this.point[1]);
+        }
+        if (this.direction == 'right') {
+            ctx.moveTo(this.point[0]-this.size*3/4, this.point[1]);
+            ctx.lineTo(this.point[0]+this.size*3/4, this.point[1]);
+            ctx.lineTo(this.point[0]+this.size*2/4, this.point[1]+this.size/4);
+            ctx.lineTo(this.point[0]+this.size*2/4, this.point[1]-this.size/4);
+            ctx.lineTo(this.point[0]+this.size*3/4, this.point[1]);
+        }
+        ctx.stroke();
+    }
+}
 
 
 
@@ -249,8 +345,8 @@ class VInOut {
         const pathDirectionInfo = {
             'up': [this.point, [this.point[0]-this.size, this.point[1]+this.size], [this.point[0]+this.size, this.point[1]+this.size]],
             'down': [this.point, [this.point[0]-this.size, this.point[1]-this.size], [this.point[0]+this.size, this.point[1]-this.size]],
-            'left': [this.point, [this.point[0]-this.size, this.point[1]-this.size], [this.point[0]-this.size, this.point[1]+this.size]],
-            'right': [this.point, [this.point[0]+this.size, this.point[1]-this.size], [this.point[0]+this.size, this.point[1]+this.size]]
+            'right': [this.point, [this.point[0]-this.size, this.point[1]-this.size], [this.point[0]-this.size, this.point[1]+this.size]],
+            'left': [this.point, [this.point[0]+this.size, this.point[1]-this.size], [this.point[0]+this.size, this.point[1]+this.size]]
         }
         const pathInfo = pathDirectionInfo[this.direction];
         ctx.beginPath();
