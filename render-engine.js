@@ -50,8 +50,14 @@ class Circuit {
     addTransistor(name, point, on, onDeps = [], direction = 'down', size = 14) {
         this.components[name] = new Transistor(name, point, on, onDeps, direction, size);
     }
-    addORGateFull(name, point, on, onDep, direction = 'down', size = 14, color = '#808080') {
-        this.components[name] = new ORGateFull(name, point, on, onDep, direction, size, color);
+    addNOTGateFull(name, point, on, onDep, direction = 'down', size = 14, color = '#808080') {
+        this.components[name] = new NOTGateFull(name, point, on, onDep, direction, size, color);
+    }
+    addANDGateFull(name, point, on, onDeps, direction = 'down', size = 14, color = '#808080') {
+        this.components[name] = new ANDGateFull(name, point, on, onDeps, direction, size, color);
+    }
+    addORGateFull(name, point, on, onDeps, direction = 'down', size = 14, color = '#808080') {
+        this.components[name] = new ORGateFull(name, point, on, onDeps, direction, size, color);
     }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
@@ -314,7 +320,7 @@ class Transistor {
 //size is radius of transistor
 //onDep is name of the on dependency
 //color is for border
-class ORGateFull {
+class NOTGateFull {
     constructor(name, point, on, onDep, direction, size, color) {
         this.name = name;
         this.point = point;
@@ -413,6 +419,305 @@ class ORGateFull {
         ctx.fillStyle = '#808080';
         ctx.font = String(l) + 'px monospace';
         ctx.fillText('NOT', x + l*1/4, y + 3.8*l)
+        //coordinate guide
+        if (extraInfo) {
+            ctx.font = String(0.80*l) + 'px monospace';
+            ctx.fillStyle = '#ff0000';
+            ctx.fillText('('+String(x - 2.5*l)+','+String(y)+')', x - 5.5*l, y + l)
+            ctx.fillText('('+String(x + 2.5*l)+','+String(y)+')', x + l, y + l)
+        }
+    }
+}
+
+//AND Gate in terms of circuitry
+//point is array coord in centre of surrounding rectangle
+//for now only 'down' direction supported
+//size is radius of transistor
+//onDep is name of the on dependency
+//color is for border
+//only connect to wires
+class ANDGateFull {
+    constructor(name, point, on, onDeps, direction, size, color) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDeps = onDeps;
+        this.onDep1 = false;
+        this.onDep2 = false;
+        this.direction = direction;
+        this.size = size;
+        this.color = color;
+    }
+    updateLogic(components, clickables) {
+        this.on = false;
+        this.onDep1 = components[this.onDeps[0]].on;
+        this.onDep2 = components[this.onDeps[1]].on;
+        if (this.onDep1 && this.onDep2) {
+            this.on = true;
+        }
+    }
+    render(ctx, extraInfo) {
+        const x = this.point[0];
+        const y = this.point[1];
+        const l = this.size;
+        //border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = this.color;
+        ctx.strokeRect(x - 2*l, y - 4.5*l, 4*l, 9*l);
+        //wires
+        const mainWireColor = this.on ? '#375997' : '#ffff00';
+        const otherWireColor = this.on ?  '#ffff00' : '#375997';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y + 2*l);
+        ctx.strokeStyle = '#375997';
+        ctx.lineTo(x - l/2, y + 3.5*l);
+        ctx.stroke();
+        ctx.strokeStyle = otherWireColor;
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y + 2*l);
+        ctx.lineTo(x + 1.5*l, y + 2*l);
+        ctx.lineTo(x + 1.5*l, Math.round(y - 0.75*l));
+        ctx.lineTo(x + 2.5*l, Math.round(y - 0.75*l));
+        ctx.stroke();
+        ctx.strokeStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y - 3.5*l);
+        ctx.lineTo(x - l/2, y - 2.5*l);
+        ctx.stroke();
+        ctx.beginPath(); //line to T1
+        ctx.strokeStyle = this.onDep1 ? '#ffff00' : '#375997';
+        ctx.moveTo(x - l, y - 2*l);
+        ctx.lineTo(x - 2.5*l, y - 2*l);
+        ctx.stroke();
+        ctx.beginPath() //line from T1
+        ctx.moveTo(x - 0.5*l, y - 2*l);
+        ctx.lineTo(x - 0.5*l, y);
+        ctx.stroke();
+        ctx.beginPath(); //line to T2
+        ctx.strokeStyle = this.onDep2 ? '#ffff00' : '#375997';
+        ctx.moveTo(x - l, y + 0.5*l);
+        ctx.lineTo(x - 2.5*l, y + 0.5*l);
+        ctx.stroke();
+        ctx.beginPath() //line from T2
+        ctx.strokeStyle = (this.onDep1 && this.onDep2) ? '#ffff00' : '#375997';
+        ctx.moveTo(x - 0.5*l, y);
+        ctx.lineTo(x - 0.5*l, y + 2*l);
+        ctx.stroke();
+        //transistor1
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x - l/2, y - 2*l, l, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = this.onDep1 ? '#ffff00' : '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y - 2*l-l*3/4);
+        ctx.lineTo(x - l/2, y - 2*l+l*3/4);
+        ctx.lineTo(x - l/2+l/4, y - 2*l+l*2/4);
+        ctx.lineTo(x - l/2-l/4, y - 2*l+l*2/4);
+        ctx.lineTo(x - l/2, y - 2*l+l*3/4);
+        ctx.stroke();
+        //transistor2
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x - l/2, y + 0.5*l, l, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = (this.onDep1 && this.onDep2) ? '#ffff00' : '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y + 0.5*l-l*3/4);
+        ctx.lineTo(x - l/2, y + 0.5*l+l*3/4);
+        ctx.lineTo(x - l/2+l/4, y + 0.5*l+l*2/4);
+        ctx.lineTo(x - l/2-l/4, y + 0.5*l+l*2/4);
+        ctx.lineTo(x - l/2, y + 0.5*l+l*3/4);
+        ctx.stroke();
+        //decorators
+        //VIn
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#ffff00';
+        ctx.strokeStyle = '#ffff00';
+        const pathInfo1 = [[x - l/2, y - 3.5*l], [x - l, y - 3.5*l -l/2], [x, y - 3.5*l -l/2]];
+        ctx.moveTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.lineTo(pathInfo1[1][0], pathInfo1[1][1]);
+        ctx.lineTo(pathInfo1[2][0], pathInfo1[2][1]);
+        ctx.lineTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //VOut
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#808080';
+        const pathInfo2 = [[x - l/2, y + 3.5*l + l/2], [x - l, y + 3.5*l], [x, y + 3.5*l]];
+        ctx.moveTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.lineTo(pathInfo2[1][0], pathInfo2[1][1]);
+        ctx.lineTo(pathInfo2[2][0], pathInfo2[2][1]);
+        ctx.lineTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //resistor
+        ctx.fillStyle = '#6d2012';
+        ctx.fillRect(x - 0.75*l, y + 2.25*l, l/2, l);
+        //text
+        ctx.fillStyle = '#808080';
+        ctx.font = String(l) + 'px monospace';
+        ctx.fillText('AND', x + l*1/4, y + 4.3*l)
+    }
+}
+
+//OR Gate in terms of circuitry
+//point is array coord in centre of surrounding rectangle
+//for now only 'down' direction supported
+//size is radius of transistor
+//onDep is name of the on dependency
+//color is for border
+//only connect to wires
+class ORGateFull {
+    constructor(name, point, on, onDeps, direction, size, color) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDeps = onDeps;
+        this.onDep1 = false;
+        this.onDep2 = false;
+        this.direction = direction;
+        this.size = size;
+        this.color = color;
+    }
+    updateLogic(components, clickables) {
+        this.on = false;
+        this.onDep1 = components[this.onDeps[0]].on;
+        this.onDep2 = components[this.onDeps[1]].on;
+        if (this.onDep1 || this.onDep2) {
+            this.on = true;
+        }
+    }
+    render(ctx, extraInfo) {
+        const x = this.point[0];
+        const y = this.point[1];
+        const l = this.size;
+        //border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = this.color;
+        ctx.strokeRect(x - 2*l, y - 4.5*l, 4*l, 9*l);
+        //wires
+        const mainWireColor = this.on ? '#375997' : '#ffff00';
+        const otherWireColor = this.on ?  '#ffff00' : '#375997';
+        ctx.beginPath(); //wire through resistor
+        ctx.moveTo(x - l/2, y + 2*l);
+        ctx.strokeStyle = '#375997';
+        ctx.lineTo(x - l/2, y + 3.5*l);
+        ctx.stroke();
+        ctx.strokeStyle = otherWireColor;
+        ctx.beginPath(); //out wire
+        ctx.moveTo(x + 1.5*l, y - 0.45*l);
+        ctx.lineTo(x + 1.5*l, Math.round(y - 0.75*l));
+        ctx.lineTo(x + 2.5*l, Math.round(y - 0.75*l));
+        ctx.stroke();
+        ctx.strokeStyle = '#ffff00';
+        ctx.beginPath(); //line from Vin
+        ctx.moveTo(x - l/2, y - 3.5*l);
+        ctx.lineTo(x - l/2, y - 3.3*l);
+        ctx.stroke();
+        ctx.beginPath(); //line from above to both T before gap
+        ctx.moveTo(x + l/2, y - 2.5*l);
+        ctx.lineTo(x + l/2, y - 3.3*l);
+        ctx.lineTo(x - 1.5*l, y - 3.3*l);
+        ctx.lineTo(x - 1.5*l, y - 2.2*l)
+        ctx.stroke();
+        ctx.beginPath(); //after gap
+        ctx.moveTo(x - 1.5*l, y - 1.8*l)
+        ctx.lineTo(x - 1.5*l, y - l);
+        ctx.lineTo(x - 0.5*l, y - l);
+        ctx.lineTo(x - 0.5*l, y);
+        ctx.stroke();
+        ctx.beginPath(); //line to T1
+        ctx.strokeStyle = this.onDep1 ? '#ffff00' : '#375997';
+        ctx.moveTo(x , y - 2*l);
+        ctx.lineTo(x - 2.5*l, y - 2*l);
+        ctx.stroke();
+        ctx.beginPath() //line from T1
+        ctx.moveTo(x + 0.5*l, y - 2*l);
+        ctx.lineTo(x + 0.5*l, y - 0.5*l);
+        ctx.lineTo(x + 1.5*l, y - 0.5*l);
+        ctx.stroke();
+        ctx.beginPath(); //line to T2
+        ctx.strokeStyle = this.onDep2 ? '#ffff00' : '#375997';
+        ctx.moveTo(x - l, y + 0.5*l);
+        ctx.lineTo(x - 2.5*l, y + 0.5*l);
+        ctx.stroke();
+        ctx.beginPath() //line from T2
+        ctx.strokeStyle = (this.onDep2) ? '#ffff00' : '#375997';
+        ctx.moveTo(x - 0.5*l, y);
+        ctx.lineTo(x - 0.5*l, y + 2*l);
+        ctx.lineTo(x + 1.5*l, y + 2*l);
+        ctx.lineTo(x + 1.5*l, y - 0.5*l);
+        ctx.stroke();
+        //transistor1
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x + l/2, y - 2*l, l, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = this.onDep1 ? '#ffff00' : '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(x + l/2, y - 2*l-l*3/4);
+        ctx.lineTo(x + l/2, y - 2*l+l*3/4);
+        ctx.lineTo(x + l/2+l/4, y - 2*l+l*2/4);
+        ctx.lineTo(x + l/2-l/4, y - 2*l+l*2/4);
+        ctx.lineTo(x + l/2, y - 2*l+l*3/4);
+        ctx.stroke();
+        //transistor2
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x - l/2, y + 0.5*l, l, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = this.onDep2 ? '#ffff00' : '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y + 0.5*l-l*3/4);
+        ctx.lineTo(x - l/2, y + 0.5*l+l*3/4);
+        ctx.lineTo(x - l/2+l/4, y + 0.5*l+l*2/4);
+        ctx.lineTo(x - l/2-l/4, y + 0.5*l+l*2/4);
+        ctx.lineTo(x - l/2, y + 0.5*l+l*3/4);
+        ctx.stroke();
+        //decorators
+        //VIn
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#ffff00';
+        ctx.strokeStyle = '#ffff00';
+        const pathInfo1 = [[x - l/2, y - 3.5*l], [x - l, y - 3.5*l -l/2], [x, y - 3.5*l -l/2]];
+        ctx.moveTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.lineTo(pathInfo1[1][0], pathInfo1[1][1]);
+        ctx.lineTo(pathInfo1[2][0], pathInfo1[2][1]);
+        ctx.lineTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //VOut
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#808080';
+        const pathInfo2 = [[x - l/2, y + 3.5*l + l/2], [x - l, y + 3.5*l], [x, y + 3.5*l]];
+        ctx.moveTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.lineTo(pathInfo2[1][0], pathInfo2[1][1]);
+        ctx.lineTo(pathInfo2[2][0], pathInfo2[2][1]);
+        ctx.lineTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //resistor
+        ctx.fillStyle = '#6d2012';
+        ctx.fillRect(x - 0.75*l, y + 2.25*l, l/2, l);
+        //text
+        ctx.fillStyle = '#808080';
+        ctx.font = String(l) + 'px monospace';
+        ctx.fillText('OR', x + l*3/4, y + 4.3*l)
     }
 }
 

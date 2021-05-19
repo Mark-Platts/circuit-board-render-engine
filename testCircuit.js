@@ -1,5 +1,6 @@
 
 function testCircuitLogic() {
+    circ1.extraInfo = true;
     circ1.addWire('testWire', [[20,20],[80,20],[80,100]], false);
     circ1.addWireGaps([[40, 20], [60,20]]);
     circ1.addVInOut([20,20], 'right', true);
@@ -8,7 +9,7 @@ function testCircuitLogic() {
     circ1.addWire('testOnOffWire', [[200,200],[240,200]], false, ['testSwitch']);
     circ1.addSwitch('testSwitch2', [250,240], false);
     circ1.addTransistor('testTrans', [300,300], false, [], 'left');
-    circ1.addORGateFull('testORFull', [400, 300], false, 'testOnOffWire', 'down');
+    circ1.addNOTGateFull('testORFull', [400, 300], false, 'testOnOffWire', 'down');
     circ1.update();
 }
 
@@ -39,8 +40,30 @@ function testCircuitLogic3() {
 function testCircuitLogic4() {
     circ4.addSwitch('S1', [20,100], false, 'up');
     circ4.addWire('W1', [[20,100],[100,100]], false, ['S1']);
-    circ4.addORGateFull('OR1', [100, 100], false, 'W1');
-    circ4.addWire('W3', [[130,100],[180,100]], false, ['OR1']);
+    circ4.addNOTGateFull('NOT1', [100, 100], false, 'W1');
+    circ4.addWire('W3', [[130,100],[180,100]], false, ['NOT1']);
     circ4.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
     circ4.update();
+}
+
+function testCircuitLogic5() {
+    circ5.addSwitch('S1', [20,20], false, 'down');
+    circ5.addSwitch('S2', [20,180], false, 'up');
+    circ5.addWire('W1', [[20,20],[50,20],[50,82], [65,82]], false, ['S1']);
+    circ5.addWire('W2', [[20,180],[50,180],[50,117],[65,117]], false, ['S2']);
+    circ5.addWire('W3', [[130,100],[180,100]], false, ['AND1']);
+    circ5.addANDGateFull('AND1', [100, 110], false, ['W1','W2']);
+    circ5.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
+    circ5.update();
+}
+
+function testCircuitLogic6() {
+    circ6.addSwitch('S1', [20,20], false, 'down');
+    circ6.addSwitch('S2', [20,180], false, 'up');
+    circ6.addWire('W1', [[20,20],[50,20],[50,82], [65,82]], false, ['S1']);
+    circ6.addWire('W2', [[20,180],[50,180],[50,117],[65,117]], false, ['S2']);
+    circ6.addWire('W3', [[130,100],[180,100]], false, ['OR1']);
+    circ6.addORGateFull('OR1', [100, 110], false, ['W1','W2']);
+    circ6.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
+    circ6.update();
 }
