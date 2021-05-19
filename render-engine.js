@@ -44,8 +44,8 @@ class Circuit {
     addWire(name, points, on, onDeps = [], offDeps = []){
         this.components[name] =  new Wire(name, points, on, onDeps, offDeps);
     }
-    addCircleBulb(name, point, on, onDeps = [], size = 14) {
-        this.components[name] =  new CircleBulb(name, point, on, onDeps, size);
+    addCircleBulb(name, point, on, onDeps = [], digit = 'off', size = 14) {
+        this.components[name] =  new CircleBulb(name, point, on, onDeps, digit, size);
     }
     addTransistor(name, point, on, onDeps = [], direction = 'down', size = 14) {
         this.components[name] = new Transistor(name, point, on, onDeps, direction, size);
@@ -180,11 +180,12 @@ class Wire {
 //onDep is array with names of on dependancies, work with OR logic
 //size is radius
 class CircleBulb {
-    constructor(name, point, on, onDeps, size) {
+    constructor(name, point, on, onDeps, digit, size) {
         this.name = name;
         this.point = point;
         this.on = on;
         this.onDeps = onDeps;
+        this.digit = digit;
         this.size = size;
     }
     updateLogic(components, clickables) {
@@ -212,6 +213,24 @@ class CircleBulb {
         ctx.arc(this.point[0], this.point[1], this.size, 0, 2*Math.PI);
         ctx.fill();
         ctx.stroke();
+        const sizeFactor = this.size*1.60;
+        if (this.digit != 'off') {
+            ctx.font = String(this.size) + "px monospace";
+            ctx.fillStyle = '#ffffff'
+            const text = this.on ? '1' : '0';
+            if (this.digit == 'up') {
+                ctx.fillText(text, this.point[0] - sizeFactor/4, this.point[1] - sizeFactor);
+            }
+            else if (this.digit == 'down') {
+                ctx.fillText(text, this.point[0] - sizeFactor/4, this.point[1] + sizeFactor*5/4);
+            }
+            else if (this.digit == 'left') {
+                ctx.fillText(text, this.point[0] - sizeFactor*5/4, this.point[1] + sizeFactor/4);
+            }
+            else if (this.digit == 'right') {
+                ctx.fillText(text, this.point[0] + sizeFactor*3/4, this.point[1] + sizeFactor/4);
+            }
+        }
     }
 }
 
@@ -308,10 +327,10 @@ class ORGateFull {
     updateLogic(components, clickables) {
         this.on = false;
         if (this.onDep in components) { //see if the dependency is in components
-            this.on = components[this.onDep].on
+            this.on = !components[this.onDep].on
         }
         else if (this.onDep in clickables) { //if dependency is not in components, check clickables
-            this.on = clickables[this.onDep].on
+            this.on = !clickables[this.onDep].on
         }
     }
     render(ctx, extraInfo) {
@@ -323,9 +342,9 @@ class ORGateFull {
         ctx.strokeStyle = this.color;
         ctx.strokeRect(this.point[0] - 2*this.size, this.point[1] - 4*this.size, 4*this.size, 8*this.size);
         //wires
-        const arrowColor = this.on ? '#ffff00' : '#ffffff';
-        const mainWireColor = this.on ? '#ffff00' : '#375997';
-        const otherWireColor = this.on ?  '#375997' : '#ffff00';
+        const arrowColor = this.on ? '#ffffff' : '#ffff00';
+        const mainWireColor = this.on ? '#375997' : '#ffff00';
+        const otherWireColor = this.on ?  '#ffff00' : '#375997';
         ctx.strokeStyle = otherWireColor;
         ctx.beginPath();
         ctx.moveTo(x - l/2, y - 2*l);

@@ -35,3 +35,12 @@ function testCircuitLogic3() {
     circ3.orderOverride.push('T1');
     circ3.update();
 }
+
+function testCircuitLogic4() {
+    circ4.addSwitch('S1', [20,100], false, 'up');
+    circ4.addWire('W1', [[20,100],[100,100]], false, ['S1']);
+    circ4.addORGateFull('OR1', [100, 100], false, 'W1');
+    circ4.addWire('W3', [[130,100],[180,100]], false, ['OR1']);
+    circ4.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
+    circ4.update();
+}
