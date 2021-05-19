@@ -31,6 +31,8 @@ class Circuit {
                     this.update();
                 }
             }
+        //for technical things
+        this.showCoords = false; //turn true to have coord data shown for each component
         })
     }
     clearCanvas() {
@@ -42,11 +44,14 @@ class Circuit {
     addWire(name, points, on, onDeps = [], offDeps = []){
         this.components[name] =  new Wire(name, points, on, onDeps, offDeps);
     }
-    addCircleBulb(name, point, on, onDeps = [], size = 12) {
+    addCircleBulb(name, point, on, onDeps = [], size = 14) {
         this.components[name] =  new CircleBulb(name, point, on, onDeps, size);
     }
-    addTransistor(name, point, on, onDeps = [], direction = 'down', size = 12) {
+    addTransistor(name, point, on, onDeps = [], direction = 'down', size = 14) {
         this.components[name] = new Transistor(name, point, on, onDeps, direction, size);
+    }
+    addORGateFull(name, point, on, onDep, direction = 'down', size = 14, color = '#808080') {
+        this.components[name] = new ORGateFull(name, point, on, onDep, direction, size, color);
     }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
@@ -56,6 +61,11 @@ class Circuit {
     }
     addResistor(point, height, width, color = '#6d2012') {
         this.decorators.push(new Resistor(point, height, width, color));
+    }
+    addWireGaps(points) {
+        for (let i of points) {
+            this.decorators.push(new WireGap(i));
+        }
     }
     renderComponents() {
         for (let i in this.components) {
@@ -72,7 +82,6 @@ class Circuit {
         let change = true;  //this keeps track of whether a change occurs in the system  //TEST BREAK HERE WHEN WORKING
         while (change) {
             for (let i of this.orderOverride) {
-                console.log(this.components)
                 const startOn = this.components[i].on;
                 this.components[i].updateLogic(this.components, this.clickables);
                 if (startOn != this.components[i].on) {
@@ -163,35 +172,7 @@ class Wire {
 }
 
 
-//creates a switch object, name is unique string, point is array-coord for middle of the switch, on is bool
-//digit: off, up, down, left, right as string, places a 0/1 relative to switch.
-class Switch {
-    constructor(name, point, on, digit, size) {
-        this.name = name;
-        this.point = point;
-        this.on = on;
-        this.digit = digit;
-        this.size = size;
-        this.shapeStart = [this.point[0]-this.size/2, this.point[1]-this.size/2];
-    }
-    onSwitch() {
-        this.on = this.on ? false : true;
-    }
-    getBoundaries() { //returns the start and end values for each dimension
-        const xStart = this.shapeStart[0];
-        const yStart = this.shapeStart[1];
-        const xEnd = this.shapeStart[0] + this.size;
-        const yEnd = this.shapeStart[1] + this.size;
-        return([[xStart, xEnd], [yStart, yEnd]]);
-    }
-    render(ctx, extraInfo) {
-        ctx.lineWidth = 2;
-        ctx.fillStyle = (this.on ? '#262626' : '#666666');
-        ctx.strokeStyle = '#808080';
-        ctx.fillRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
-        ctx.strokeRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
-    }
-}
+
 
 
 //for circular bulb component
@@ -260,21 +241,8 @@ class Transistor {
                 }
             }
         }
-        this.on = hold;
-    }
-    updateLogicOLD(components, clickables) {
-        let hold = true;
-        for (let i of this.onDeps) { //for each of the on dependencies
-            if (i in components) { //see if the dependency is in components
-                if (components[i].on == false) { //if so, check if the component is on
-                    hold = false;  //if it is then the wire should turn on
-                }
-            }
-            else if (i in clickables) { //if dependency is not in components, check clickables
-                if (clickables[i].on == false) {
-                    hold = false;  
-                }
-            }
+        if (this.onDeps.length != 2) {
+            hold = false;
         }
         this.on = hold;
     }
@@ -321,11 +289,113 @@ class Transistor {
 }
 
 
-
-
-
-
-
+//Not Gate in terms of circuitry
+//point is array coord in centre of surrounding rectangle
+//for now only 'down' direction supported
+//size is radius of transistor
+//onDep is name of the on dependency
+//color is for border
+class ORGateFull {
+    constructor(name, point, on, onDep, direction, size, color) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDep = onDep;
+        this.direction = direction;
+        this.size = size;
+        this.color = color;
+    }
+    updateLogic(components, clickables) {
+        this.on = false;
+        if (this.onDep in components) { //see if the dependency is in components
+            this.on = components[this.onDep].on
+        }
+        else if (this.onDep in clickables) { //if dependency is not in components, check clickables
+            this.on = clickables[this.onDep].on
+        }
+    }
+    render(ctx, extraInfo) {
+        const x = this.point[0];
+        const y = this.point[1];
+        const l = this.size;
+        //border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = this.color;
+        ctx.strokeRect(this.point[0] - 2*this.size, this.point[1] - 4*this.size, 4*this.size, 8*this.size);
+        //wires
+        const arrowColor = this.on ? '#ffff00' : '#ffffff';
+        const mainWireColor = this.on ? '#ffff00' : '#375997';
+        const otherWireColor = this.on ?  '#375997' : '#ffff00';
+        ctx.strokeStyle = otherWireColor;
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y - 2*l);
+        ctx.lineTo(x + 1.5*l, y - 2*l);
+        ctx.lineTo(x + 1.5*l, y);
+        ctx.lineTo(x + 2.5*l, y);
+        ctx.stroke();
+        ctx.strokeStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y - 3*l);
+        ctx.lineTo(x - l/2, y - 2*l);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y - 2*l);
+        ctx.strokeStyle = mainWireColor;
+        ctx.lineTo(x - l/2, y + 3*l);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x - l, y);
+        ctx.lineTo(x - 2.5*l, y);
+        ctx.stroke();
+        //transistor
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x - l/2, y, l, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = arrowColor;
+        ctx.beginPath();
+        ctx.moveTo(x - l/2, y-l*3/4);
+        ctx.lineTo(x - l/2, y+l*3/4);
+        ctx.lineTo(x - l/2+l/4, y+l*2/4);
+        ctx.lineTo(x - l/2-l/4, y+l*2/4);
+        ctx.lineTo(x - l/2, y+l*3/4);
+        ctx.stroke();
+        //decorators
+        //VIn
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#ffff00';
+        ctx.strokeStyle = '#ffff00';
+        const pathInfo1 = [[x - l/2, y - 3*l], [x - l, y - 3*l -l/2], [x, y - 3*l -l/2]];
+        ctx.moveTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.lineTo(pathInfo1[1][0], pathInfo1[1][1]);
+        ctx.lineTo(pathInfo1[2][0], pathInfo1[2][1]);
+        ctx.lineTo(pathInfo1[0][0], pathInfo1[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //VOut
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#808080';
+        const pathInfo2 = [[x - l/2, y + 3*l + l/2], [x - l, y + 3*l], [x, y + 3*l]];
+        ctx.moveTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.lineTo(pathInfo2[1][0], pathInfo2[1][1]);
+        ctx.lineTo(pathInfo2[2][0], pathInfo2[2][1]);
+        ctx.lineTo(pathInfo2[0][0], pathInfo2[0][1]);
+        ctx.fill();
+        ctx.stroke();
+        //resistor
+        ctx.fillStyle = '#6d2012';
+        ctx.fillRect(x, y - 2.25*l, l, l/2);
+        //text
+        ctx.fillStyle = '#808080';
+        ctx.font = String(l) + 'px monospace';
+        ctx.fillText('NOT', x + l*1/4, y + 3.8*l)
+    }
+}
 
 
 //DECORATORS
@@ -380,3 +450,65 @@ class Resistor {
     }
 }
 
+//used to place a small gap on a wire for wires that cross over. Use just after wire that needs gaps
+//point is an array coord
+class WireGap {
+    constructor(point) {
+        this.point = point;
+        this.size = 10;
+    }
+    render(ctx) {
+        ctx.fillStyle = '#0f2d06';
+        ctx.fillRect(this.point[0]-this.size/2, this.point[1]-this.size/2, this.size, this.size);
+    }
+}
+
+
+//CLICKABLES
+
+//creates a switch object, name is unique string, point is array-coord for middle of the switch, on is bool
+//digit: off, up, down, left, right as string, places a 0/1 relative to switch.
+class Switch {
+    constructor(name, point, on, digit, size) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.digit = digit;
+        this.size = size;
+        this.shapeStart = [this.point[0]-this.size/2, this.point[1]-this.size/2];
+    }
+    onSwitch() {
+        this.on = this.on ? false : true;
+    }
+    getBoundaries() { //returns the start and end values for each dimension
+        const xStart = this.shapeStart[0];
+        const yStart = this.shapeStart[1];
+        const xEnd = this.shapeStart[0] + this.size;
+        const yEnd = this.shapeStart[1] + this.size;
+        return([[xStart, xEnd], [yStart, yEnd]]);
+    }
+    render(ctx, extraInfo) {
+        ctx.lineWidth = 2;
+        ctx.fillStyle = (this.on ? '#262626' : '#666666');
+        ctx.strokeStyle = '#808080';
+        ctx.fillRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
+        ctx.strokeRect(this.shapeStart[0], this.shapeStart[1], this.size, this.size);
+        if (this.digit != 'off') {
+            ctx.font = String(this.size*3/4) + "px monospace";
+            ctx.fillStyle = '#ffffff'
+            const text = this.on ? '1' : '0';
+            if (this.digit == 'up') {
+                ctx.fillText(text, this.point[0] - this.size/4, this.point[1] - this.size);
+            }
+            else if (this.digit == 'down') {
+                ctx.fillText(text, this.point[0] - this.size/4, this.point[1] + this.size*5/4);
+            }
+            else if (this.digit == 'left') {
+                ctx.fillText(text, this.point[0] - this.size*5/4, this.point[1] + this.size/4);
+            }
+            else if (this.digit == 'right') {
+                ctx.fillText(text, this.point[0] + this.size*3/4, this.point[1] + this.size/4);
+            }
+        }
+    }
+}

@@ -1,12 +1,14 @@
 
 function testCircuitLogic() {
     circ1.addWire('testWire', [[20,20],[80,20],[80,100]], false);
+    circ1.addWireGaps([[40, 20], [60,20]]);
     circ1.addVInOut([20,20], 'right', true);
     circ1.addResistor([100,100], 20, 40);
-    circ1.addSwitch('testSwitch', [200,200], true);
+    circ1.addSwitch('testSwitch', [200,200], true, 'up');
     circ1.addWire('testOnOffWire', [[200,200],[240,200]], false, ['testSwitch']);
     circ1.addSwitch('testSwitch2', [250,240], false);
     circ1.addTransistor('testTrans', [300,300], false, [], 'left');
+    circ1.addORGateFull('testORFull', [400, 300], false, 'testOnOffWire', 'down');
     circ1.update();
 }
 
