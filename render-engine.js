@@ -810,6 +810,7 @@ class NOTGate {
         const x = this.point[0];
         const y = this.point[1];
         const l = this.size;
+        const width = l*(3**0.5);
         //wires
         ctx.strokeStyle = this.on ? '#ffff00' : '#375997';
         ctx.beginPath(); //out wire
@@ -823,12 +824,38 @@ class NOTGate {
         ctx.stroke();
         ctx.beginPath(); //shape
         ctx.fillStyle = this.color;
-        ctx.arc(x - 0.5*l, y + l, 2*l, Math.PI*3/2, 2 * Math.PI - Math.PI/6);
-        ctx.arc(x - 0.5*l, y - l, 2*l, Math.PI/6, Math.PI/2);
-        ctx.arc(x - 2*l - 0.5*l, y, 2*l, Math.PI/6, -Math.PI/6, true);
+        ctx.beginPath();
+        ctx.moveTo(x - l, y - l);
+        ctx.lineTo(x - l, y + l);
+        ctx.lineTo(x - l + width, y);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x - l + width + 0.18*l, y, l/4, 0, 2 * Math.PI);
         ctx.fill();
     }
 }
+
+// render(ctx, extraInfo) {
+//     const x = this.point[0];
+//     const y = this.point[1];
+//     const l = this.size;
+//     //wires
+//     ctx.strokeStyle = this.on ? '#ffff00' : '#375997';
+//     ctx.beginPath(); //out wire
+//     ctx.moveTo(x + 0.5*l, y);
+//     ctx.lineTo(x + 1.5*l, y);
+//     ctx.stroke();
+//     ctx.beginPath(); //in wire
+//     ctx.strokeStyle = this.on ? '#375997' : '#ffff00';
+//     ctx.moveTo(x - 0.5*l , y);
+//     ctx.lineTo(x - 1.5*l, y);
+//     ctx.stroke();
+//     ctx.beginPath(); //shape
+//     ctx.fillStyle = this.color;
+//     ctx.fillRect(x - l, y - l, 1.5*l, 2*l);
+//     ctx.arc(x + 0.5*l, y, l, 0, 2 * Math.PI);
+//     ctx.fill();
+// }
 
 
 //DECORATORS
