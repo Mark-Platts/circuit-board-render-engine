@@ -78,3 +78,12 @@ function testCircuitLogic7() {
     circ7.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
     circ7.update();
 }
+
+function testCircuitLogic8() {
+    circ8.addSwitch('S1', [20,100], false, 'down');
+    circ8.addWire('W1', [[20,100],[80,100]], false, ['S1']);
+    circ8.addWire('W3', [[120,100],[180,100]], false, ['NOT1']);
+    circ8.addNOTGate('NOT1', [100, 100], false, 'W1');
+    circ8.addCircleBulb('B1', [180,100], false, ['W3'], 'up');
+    circ8.update();
+}
