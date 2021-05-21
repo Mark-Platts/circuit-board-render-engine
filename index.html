@@ -12,25 +12,31 @@
       <body>
 
         <div id="circuit-container"></div>
-        <div id="second-test"></div>
-        <div id="third-test"></div>
-        <div id="fourth-test"></div>
-        <div id="fifth-test"></div>
-        <div id="sixth-test"></div>
+        <div id="wire-split-test"></div>
+        <div id="transistor-test"></div>
+        <div id="NOT-gate-full-test"></div>
+        <div id="NOT-gate-sym-test"></div>
+        <div id="AND-gate-full-test"></div>
+        <div id="OR-gate-full-test"></div>
+        <div id="OR-gate-sym-test"></div>
 
         <script>
             let circ1 = new Circuit("circuit-container", '800px', '600px');
             testCircuitLogic();
-            let circ2 = new Circuit("second-test", '200px', '200px');
+            let circ2 = new Circuit("wire-split-test", '200px', '200px');
             testCircuitLogic2();
-            let circ3 = new Circuit("third-test", '200px', '200px');
+            let circ3 = new Circuit("transistor-test", '200px', '200px');
             testCircuitLogic3();
-            let circ4 = new Circuit("fourth-test", '200px', '200px');
+            let circ4 = new Circuit("NOT-gate-full-test", '200px', '200px');
             testCircuitLogic4();
-            let circ5 = new Circuit("fifth-test", '200px', '200px');
+            let circ5 = new Circuit("AND-gate-full-test", '200px', '200px');
             testCircuitLogic5();
-            let circ6 = new Circuit("sixth-test", '200px', '200px');
+            let circ6 = new Circuit("OR-gate-full-test", '200px', '200px');
             testCircuitLogic6();
+            let circ7 = new Circuit("OR-gate-sym-test", '200px', '200px');
+            testCircuitLogic7();
+            let circ8 = new Circuit("NOT-gate-sym-test", '200px', '200px');
+            testCircuitLogic8();
         </script>
 
       </body>
