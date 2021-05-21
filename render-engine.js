@@ -65,6 +65,9 @@ class Circuit {
     addNOTGate(name, point, on, onDep, direction = 'right', size = 18, color = '#808080') {
         this.components[name] = new NOTGate(name, point, on, onDep, direction, size, color);
     }
+    addANDGate(name, point, on, onDeps, direction = 'right', size = 18, color = '#808080') {
+        this.components[name] = new ANDGate(name, point, on, onDeps, direction, size, color);
+    }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
     }
@@ -835,27 +838,64 @@ class NOTGate {
     }
 }
 
-// render(ctx, extraInfo) {
-//     const x = this.point[0];
-//     const y = this.point[1];
-//     const l = this.size;
-//     //wires
-//     ctx.strokeStyle = this.on ? '#ffff00' : '#375997';
-//     ctx.beginPath(); //out wire
-//     ctx.moveTo(x + 0.5*l, y);
-//     ctx.lineTo(x + 1.5*l, y);
-//     ctx.stroke();
-//     ctx.beginPath(); //in wire
-//     ctx.strokeStyle = this.on ? '#375997' : '#ffff00';
-//     ctx.moveTo(x - 0.5*l , y);
-//     ctx.lineTo(x - 1.5*l, y);
-//     ctx.stroke();
-//     ctx.beginPath(); //shape
-//     ctx.fillStyle = this.color;
-//     ctx.fillRect(x - l, y - l, 1.5*l, 2*l);
-//     ctx.arc(x + 0.5*l, y, l, 0, 2 * Math.PI);
-//     ctx.fill();
-// }
+//AND Gate as a symbol
+//for now only 'right' direction supported
+//size is radius of transistor
+//onDeps is name of the on dependency
+//color is for fill
+//only connect to wires
+class ANDGate {
+    constructor(name, point, on, onDeps, direction, size, color) {
+        this.name = name;
+        this.point = point;
+        this.on = on;
+        this.onDeps = onDeps;
+        this.onDep1 = false;
+        this.onDep2 = false;
+        this.direction = direction;
+        this.size = size;
+        this.color = color;
+    }
+    updateLogic(components, clickables) {
+        this.on = false;
+        this.onDep1 = components[this.onDeps[0]].on;
+        this.onDep2 = components[this.onDeps[1]].on;
+        if (this.onDep1 && this.onDep2) {
+            this.on = true;
+        }
+    }
+    render(ctx, extraInfo) {
+        const x = this.point[0];
+        const y = this.point[1];
+        const l = this.size;
+        const s = 0.9*l;
+        //wires
+        ctx.strokeStyle = (this.onDep1 && this.onDep2) ? '#ffff00' : '#375997';
+        ctx.beginPath(); //out wire
+        ctx.moveTo(x + 0.5*l, y);
+        ctx.lineTo(x + 1.5*l, y);
+        ctx.stroke();
+        ctx.strokeStyle = '#ffff00';
+        ctx.beginPath(); //in wire 1
+        ctx.strokeStyle = this.onDep1 ? '#ffff00' : '#375997';
+        ctx.moveTo(x - 0.5*l , Math.round(y - 0.5*l));
+        ctx.lineTo(x - 1.5*l, Math.round(y - 0.5*l));
+        ctx.stroke();
+        ctx.beginPath(); //in wire 2
+        ctx.strokeStyle = this.onDep2 ? '#ffff00' : '#375997';
+        ctx.moveTo(x - 0.5*l, y + Math.round(0.5*l));
+        ctx.lineTo(x - 1.5*l, Math.round(y + 0.5*l));
+        ctx.stroke();
+        ctx.beginPath(); //shape
+        ctx.fillStyle = this.color;
+        ctx.fillRect(x - s, y - s, 1.5*s, 2*s);
+        ctx.arc(x + 0.5*s, y, s, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+}
+
+
+
 
 
 //DECORATORS
