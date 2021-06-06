@@ -71,6 +71,7 @@ class Circuit {
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
     }
+    
     addVInOut(point, direction, inOut, size = 5) {
         this.decorators.push(new VInOut(point, direction, inOut, size));
     }

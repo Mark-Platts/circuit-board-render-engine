@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <script src="circuitry-engine.js"></script>
+        <script src="circuits.js"></script>
+        <title> CBRE! </title>
+      </head>
+
+      <body>
+          
+        <div id="main">
+            <article>
+                <h1 style="text-align: center;">Circuit Engine Demonstration</h1>
+                <p>I made this mainly as a way to show off logic circuits to help explain how computers work. 
+                    However, it turned out to be great practice for Object Oriented Programming. This idea began when I started experimenting 
+                    with using SVG and canvas in HTML to show off circuits. I dabbled a little but found that it took a silly 
+                    amount of time to get anything worthwhile done, and the plans I had for showing off larger circuits didn't seem possible.
+                </p>
+                <p>To combat this and the repetition of code, I decided to make an engine that would allow each component of the circuit to be defined by a single 
+                    line of code. The engine handles both the logic of the component in the circuit and the rendering of the component to the outcome canvas.
+                </p>
+                <p>I plan to write up a full documentation soon, and I still have many planned additions and tweaks. For now though, here is a demonstration.</p>
+            </article>
+
+            <div id="wire-split" class="container"></div>
+            <div id="wire-split-image" class="container"><img src="./images/wireSplitCirc.png"></div>
+
+            <article>
+                <p>In this example, we can see the circuit object 'wire-split' is created. This has a name, a width, and a height. 
+                    There is an optional fourth argument for colour as well. The user must also create a div in the html part with an 
+                id with the same name as the circuit object. This div is where the output canvas will go.</p>
+                <p>We then add components to the circuit object using methods of the circuit. 
+                    For most of these methods, the arguments follow the pattern (name, location, begin on/off, dependencies).</p>
+                <p>Some of the component objects have extra features, like how wires will go point to point for each location in the array.
+                    Resistors are a decorator with no internal logic, so all of their argument are for rendering.</p>
+                <p>Dependencies are how the internal logic of the circuit is handled. For most component types, if a dependency of the
+                    component is turned on, the component will also be turned on. update() does the first internal logic check and sets 
+                    each component to what it should be before the first render.
+                </p>
+                <p>After the internal logic is sorted out, the circuit is then rendered to a canvas object whose size is determined 
+                    by the arguments of the circuit object. The final canvas includes event handlers allowing certain objects 
+                    to be clicked on, such as the square switches in these examples.
+                </p>
+                <p> Here are some more examples:</p>
+
+            </article>
+            <div id="transistor" class="container"></div>
+            <div id="NOT-gate-full" class="container"></div>
+            <div id="NOT-gate-sym" class="container"></div>
+            <div id="AND-gate-full" class="container"></div>
+            <div id="AND-gate-sym" class="container"></div>
+            <div id="OR-gate-full" class="container"></div>
+            <div id="OR-gate-sym" class="container"></div>
+            <div id="half-adder" class="container"></div>
+            <div id="SRLatch" class="container"></div>
+            <div id="SRLatch-full" class="container"></div>
+        </div>
+
+
+        <script>
+            let wireSplitCirc = new Circuit("wire-split", '200px', '200px');
+            wireSplitCircLogic();
+            let transistorCirc = new Circuit("transistor", '200px', '200px');
+            transistorCircLogic();
+            let NOTGateFullCirc = new Circuit("NOT-gate-full", '200px', '200px');
+            NOTGateFullCircLogic();
+            let ANDGateFullCirc = new Circuit("AND-gate-full", '200px', '200px');
+            ANDGateFullCircLogic();
+            let ORGateFullCirc = new Circuit("OR-gate-full", '200px', '200px');
+            ORGateFullCircLogic();
+            let circ7 = new Circuit("OR-gate-sym", '200px', '200px');
+            CircuitLogic7();
+            let circ8 = new Circuit("NOT-gate-sym", '200px', '200px');
+            CircuitLogic8();
+            let circ9 = new Circuit("AND-gate-sym", '200px', '200px');
+            CircuitLogic9();
+            let circ10 = new Circuit("half-adder", '400px', '300px');
+            CircuitLogic10();
+            let SRLatch = new Circuit("SRLatch", '400px', '250px');
+            SRLatchLogic();
+            let SRLatchFull = new Circuit("SRLatch-full", '600px', '400px');
+            SRLatchFullLogic();
+        </script>
+
+      </body>
+</html>
