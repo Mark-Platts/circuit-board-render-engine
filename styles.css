@@ -38,6 +38,11 @@ p {
     margin: 0 auto;
 }
 
+.homeSignSVG {
+    position: fixed;
+    margin: 5px;
+}
+
 /* #circuit-container {
     border: 2px solid grey;
     padding: 20px; 
