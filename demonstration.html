@@ -22,9 +22,12 @@
                 <p>To combat this and the repetition of code, I decided to make an engine that would allow each component of the circuit to be defined by a single 
                     line of code. The engine handles both the logic of the component in the circuit and the rendering of the component to the outcome canvas.
                 </p>
-                <p>I plan to write up a full documentation soon, and I still have many planned additions and tweaks. For now though, here is a demonstration.</p>
+                <p>I plan to write up a full documentation soon, and I still have many planned additions and tweaks. For now though, here is a demonstration. 
+                </p>
             </article>
 
+            <p>Please note: In the following examples. The square switches can be clicked to turn the connected wire on.</p>
+            <p>A simple circuit to show current flowing down the path of least resistance</p>
             <div id="wire-split" class="container"></div>
             <div id="wire-split-image" class="container"><img src="./images/wireSplitCirc.png"></div>
 
@@ -37,27 +40,68 @@
                 <p>Some of the component objects have extra features, like how wires will go point to point for each location in the array.
                     Resistors are a decorator with no internal logic, so all of their argument are for rendering.</p>
                 <p>Dependencies are how the internal logic of the circuit is handled. For most component types, if a dependency of the
-                    component is turned on, the component will also be turned on. update() does the first internal logic check and sets 
-                    each component to what it should be before the first render.
+                    component is turned on, the component will also be turned on. For example, the bulb here is dependent on wire 3 and will turn on if wire 3 is on. 
+                    update() does the first internal logic check and sets each component to what it should be before the first render. 
+                    Clicking on a dynamic component such as a switch first changes the internal logic for that component before running update() for the 
+                    circuit again.
                 </p>
                 <p>After the internal logic is sorted out, the circuit is then rendered to a canvas object whose size is determined 
                     by the arguments of the circuit object. The final canvas includes event handlers allowing certain objects 
                     to be clicked on, such as the square switches in these examples.
                 </p>
                 <p> Here are some more examples:</p>
-
             </article>
+
+            <p>Demonstration of a transistor</p>
             <div id="transistor" class="container"></div>
+            <div id="transistor-image" class="container"><img src="./images/transistorCirc.png"></div>
+
+            <p>A NOT gate displayed with its internal wiring. These 'full' versions of gates are treated as a single component by the engine. 
+                This is so that transistor level circuits can be shown without having to build the internals of each gate. (see the SR Latch examples below).
+            </p>
             <div id="NOT-gate-full" class="container"></div>
+            <div id="NOT-gate-full-image" class="container"><img src="./images/NOTGateFullCirc.png"></div>
+
+            <p>A NOT gate in symbol form</p>
             <div id="NOT-gate-sym" class="container"></div>
+            <div id="NOT-gate-sym-image" class="container"><img src="./images/NOTGateSymCirc.png"></div>
+
+            <p>An AND gate displayed with its internal wiring</p>
             <div id="AND-gate-full" class="container"></div>
+            <div id="AND-gate-full-image" class="container"><img src="./images/ANDGateFullCirc.png"></div>
+
+            <p>An AND gate in symbol form</p>
             <div id="AND-gate-sym" class="container"></div>
+            <div id="AND-gate-sym-image" class="container"><img src="./images/ANDGateSymCirc.png"></div>
+
+            <p>An OR gate displayed with its internal wiring</p>
             <div id="OR-gate-full" class="container"></div>
+            <div id="OR-gate-full-image" class="container"><img src="./images/ORGateFullCirc.png"></div>
+
+            <p>An OR gate in symbol form</p>
             <div id="OR-gate-sym" class="container"></div>
+            <div id="OR-gate-sym-image" class="container"><img src="./images/ORGateSymCirc.png"></div>
+
+            <p>A half-adder. This adds two bits on the left. The upper bulb shows the value of the outcome bit. 
+                The lower bulb lights up if the 1 gets carried over to the next bit over. Multiple half-adder 
+                can be strung together to make adding circuits for general length binary numbers.
+            </p>
             <div id="half-adder" class="container"></div>
+            <div id="half-adder-image" class="container"><img src="./images/halfAdderCirc.png"></div>
+
+            <p>An SR-Latch with symbols. Turning on a switch on its own will active the diagonally opposed bulb. 
+                Turning on the same switch again then changes nothing. Hence whichever bulb is on, stays on until the other switch is turned on. 
+            This allows for a very simple way to store data bit by bit.</p>
             <div id="SRLatch" class="container"></div>
+            <div id="SRLatch-image" class="container"><img src="./images/SRLatch.png"></div>
+
+            <p>An SR-Latch at transistor level</p>
             <div id="SRLatch-full" class="container"></div>
-            <div id="basicTimer" class="container"></div>
+            <div id="SRLatch-full-image" class="container"><img src="./images/SRLatchFull.png"></div>
+
+            <p>More coming soon! I am currently working on adding clocks and basic chips to the mix.</p>
+
+            <!-- <div id="basicTimer" class="container"></div> COMING SOON-->
         </div>
 
 
@@ -84,8 +128,8 @@
             SRLatchLogic();
             let SRLatchFull = new Circuit("SRLatch-full", '600px', '400px');
             SRLatchFullLogic();
-            let basicTimer = new Circuit("basicTimer", '200px', '200px');
-            basicTimerLogic();
+            // let basicTimer = new Circuit("basicTimer", '200px', '200px');
+            // basicTimerLogic();
         </script>
 
       </body>
