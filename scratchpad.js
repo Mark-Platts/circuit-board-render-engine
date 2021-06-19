@@ -1,6 +1,8 @@
 
-function tester(first, second, third = 'def', fourth = 'def') {
-    return [first, second, third, fourth];
-}
 
-console.log(tester(1, 2, fourth = 4));
+class TestObject {
+    constructor(on) {
+        this.on = on;
+        this.timerStore = null;
+    }
+}

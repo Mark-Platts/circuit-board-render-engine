@@ -17,6 +17,7 @@ class Circuit {
         this.ctx = this.canvas.getContext("2d");
         this.components = {}; //storage for the components. name : component
         this.decorators = []; //storage for decorator objects
+        this.timerStore = {}; //stores any setIntervals set up by timers
         this.orderOverride = []; //if this isn't empty then the components here will be updated first, use names
         this.extraInfo = false; //if changed to true using method, updates extraInfo in every component and updates. This adds info to the circuit for building purposes
         //for clickables
@@ -68,10 +69,12 @@ class Circuit {
     addANDGate(name, point, on, onDeps, direction = 'right', size = 18, color = '#808080') {
         this.components[name] = new ANDGate(name, point, on, onDeps, direction, size, color);
     }
+    addBasicTimer(name, point, freq, on, dep, size = 40) {
+        this.components[name] = new BasicTimer(name, this, this.updateAllLogic, point, freq, on, dep, size);
+    }
     addSwitch(name, point, on, digit = 'off', size = 20) {
         this.clickables[name] = new Switch(name, point, on, digit, size);
     }
-    
     addVInOut(point, direction, inOut, size = 5) {
         this.decorators.push(new VInOut(point, direction, inOut, size));
     }
@@ -897,6 +900,60 @@ class ANDGate {
 
 
 
+class BasicTimer {
+    constructor(name, circ, method, point, freq, on, dep, size) {
+        this.name = name;
+        this.circ = circ;
+        this.method = method;
+        this.point = point;
+        this.freq = freq;
+        this.on = on;
+        this.dep = dep;
+        this.size = size;
+        this.timerStore = null;
+    }
+    onOff() {
+        this.on = this.on ? false : true;
+    }
+    forInterval() {
+        this.on = true;
+        //this.circ.updateAllLogic();
+        console.log(this.on);
+        console.log(this);
+    }
+    timerSwitch() {
+        if (this.timerStore) {
+            clearInterval(this.timerStore);
+            this.timerStore = null;
+            this.on = false;
+        }
+        else {
+            let timerSelf = this;
+            let timerCirc = this.circ;
+            const timerFunction = timerSelf.forInterval;
+            const boundTimerFunction = timerFunction.bind(timerSelf);
+            this.timerStore = setInterval(boundTimerFunction, 1000/this.freq);
+        }
+    }
+    updateLogic(components, clickables) {
+        if (components[this.dep].on && !this.timerStore) {
+            this.timerSwitch();
+        }
+        else if (!components[this.dep].on && this.timerStore) {
+            this.timerSwitch();
+        }
+    }
+    render(ctx, extraInfo) {
+        const width = this.size/2;
+        const height = this.size;
+        const shapeStart = [this.point[0]-width/2, this.point[1]-height/2];
+        ctx.fillStyle = '#111111';
+        ctx.fillRect(shapeStart[0], shapeStart[1], width, height);
+    }
+}
+
+
+
 
 
 //DECORATORS
@@ -1013,3 +1070,45 @@ class Switch {
         }
     }
 }
+
+
+
+//Experiments
+class TestParent {
+    constructor() {
+        this.childHolder = {};
+    }
+    testMethod() {
+        console.log("test successful");
+    }
+    addChild1(name) {
+        this.childHolder[name] = new TestChild1(name, this);
+    }
+    addChild2(name) {
+        this.childHolder[name] = new TestChild2(name, this.testMethod);
+    }
+}
+
+class TestChild1 {
+    constructor(name, parent) {
+        this.name = name;
+        this.parent = parent;
+    }
+    parentMethod() {
+        this.parent.testMethod();
+    }
+}
+
+class TestChild2 {
+    constructor(name, method) {
+        this.name = name;
+        this.method = method;
+    }
+    parentMethod() {
+        this.method();
+    }
+}
+
+let parent = new TestParent();
+parent.addChild1('child1');
+parent.addChild2('child2');

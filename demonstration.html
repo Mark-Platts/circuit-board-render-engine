@@ -57,6 +57,7 @@
             <div id="half-adder" class="container"></div>
             <div id="SRLatch" class="container"></div>
             <div id="SRLatch-full" class="container"></div>
+            <div id="basicTimer" class="container"></div>
         </div>
 
 
@@ -71,18 +72,20 @@
             ANDGateFullCircLogic();
             let ORGateFullCirc = new Circuit("OR-gate-full", '200px', '200px');
             ORGateFullCircLogic();
-            let circ7 = new Circuit("OR-gate-sym", '200px', '200px');
-            CircuitLogic7();
-            let circ8 = new Circuit("NOT-gate-sym", '200px', '200px');
-            CircuitLogic8();
-            let circ9 = new Circuit("AND-gate-sym", '200px', '200px');
-            CircuitLogic9();
-            let circ10 = new Circuit("half-adder", '400px', '300px');
-            CircuitLogic10();
+            let ORGateSymCirc = new Circuit("OR-gate-sym", '200px', '200px');
+            ORGateSymCircLogic();
+            let NOTGateSymCirc = new Circuit("NOT-gate-sym", '200px', '200px');
+            NOTGateSymCircLogic();
+            let ANDGateSymCirc = new Circuit("AND-gate-sym", '200px', '200px');
+            ANDGateSymCircLogic();
+            let halfAdderCirc = new Circuit("half-adder", '400px', '300px');
+            halfAdderCircLogic();
             let SRLatch = new Circuit("SRLatch", '400px', '250px');
             SRLatchLogic();
             let SRLatchFull = new Circuit("SRLatch-full", '600px', '400px');
             SRLatchFullLogic();
+            let basicTimer = new Circuit("basicTimer", '200px', '200px');
+            basicTimerLogic();
         </script>
 
       </body>
