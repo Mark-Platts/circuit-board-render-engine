@@ -917,9 +917,9 @@ class BasicTimer {
     }
     forInterval() {
         this.on = true;
-        //this.circ.updateAllLogic();
-        console.log(this.on);
-        console.log(this);
+        this.circ.updateAllLogic();
+        //console.log(this.on);
+        //console.log(this);
     }
     timerSwitch() {
         if (this.timerStore) {
@@ -930,9 +930,12 @@ class BasicTimer {
         else {
             let timerSelf = this;
             let timerCirc = this.circ;
-            const timerFunction = timerSelf.forInterval;
-            const boundTimerFunction = timerFunction.bind(timerSelf);
-            this.timerStore = setInterval(boundTimerFunction, 1000/this.freq);
+            const timerName = this.name;
+            this.timerStore = setInterval((timerSelf, timerCirc, timerName) => {
+                timerSelf.on = timerSelf.on ? false : true;
+                //timerCirc.components[timerName].on = true;
+                timerCirc.update();
+            }, 1000/this.freq, timerSelf, timerCirc, timerName);
         }
     }
     updateLogic(components, clickables) {
